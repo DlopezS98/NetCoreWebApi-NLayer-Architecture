@@ -1,50 +1,73 @@
 ﻿using Infrastructure.Data.Interfaces;
 using Infrastructure.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data.Repositories
 {
     public class EfRepository<T> : IAsyncEfRepository<T> where T : BaseEntity
     {
-        //protected readonly ApplicationContext _dbContext;
+        protected readonly ApplicationDbContext _dbContext;
 
-        //public EfRepository(ApplicationContext dbContext)
-        //{
-        //    _dbContext = dbContext;
-        //}
-
-        public Task<T> AddAsync(T entity)
+        public EfRepository(ApplicationDbContext dbContext)
         {
-            throw new NotImplementedException();
+            _dbContext = dbContext;
         }
 
-        public Task<List<T>> AddAsync(List<T> entity)
+        public async Task<T> AddAsync(T entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Set<T>().Add(entity);
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
-        public Task DeleteAsync(T entity)
+        public async Task<List<T>> AddAsync(List<T> entity)
         {
-            throw new NotImplementedException();
+            foreach (var item in entity)
+            {
+                _dbContext.Set<T>().Add(item);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
-        public Task<List<T>> DeleteAsync(List<T> entity)
+        public async Task DeleteAsync(T entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Set<T>().Remove(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
-        public Task<T> GetByIdAsync(Guid id)
+        public async Task<List<T>> DeleteAsync(List<T> entity)
         {
-            throw new NotImplementedException();
+            foreach (var item in entity)
+            {
+                _dbContext.Set<T>().Remove(item);
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
 
-        public Task UpdateAsync(T entity)
+        public async Task<T?> GetByIdAsync(Guid id)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Set<T>().FindAsync(id);
         }
 
-        public Task<List<T>> UpdateAsync(List<T> entity)
+        public async Task UpdateAsync(T entity)
         {
-            throw new NotImplementedException();
+            _dbContext.Entry(entity).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<T>> UpdateAsync(List<T> entity)
+        {
+            foreach (var item in entity)
+            {
+                _dbContext.Entry(item).State = EntityState.Modified;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            return entity;
         }
     }
 }
